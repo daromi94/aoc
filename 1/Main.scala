@@ -1,37 +1,28 @@
 import scala.io.Source
 
-type LocationPair = (Int, Int)
-type Locations    = Seq[Int]
+type Location     = Int
+type Locations    = Seq[Location]
+type LocationPair = (Location, Location)
 
 def readLocations(lines: Iterator[String]): (Locations, Locations) =
-  val locationPairs = lines.zipWithIndex.map { parseLocationPair }.toSeq
+  lines.map { parseLine }.toSeq.unzip
 
-  val left  = locationPairs.map(_._1)
-  val right = locationPairs.map(_._2)
-
-  (left, right)
-
-def parseLocationPair(line: String, index: Int): LocationPair =
-  val matches = line.split("\\s+")
-
-  require(matches.length == 2, s"invalid format at line ${index + 1}, expected two elements")
-
-  val l = matches(0).toInt
-  val r = matches(1).toInt
-
-  (l, r)
+def parseLine(line: String): LocationPair =
+  line.split("\\s+").toList match
+    case l :: r :: Nil => (l.toInt, r.toInt)
+    case _             => throw new IllegalArgumentException(s"invalid line format: '$line'")
 
 def calculateTotalDistance(left: Locations, right: Locations): Int =
-  val (sortedLeft, sortedRight) = (left.sorted, right.sorted)
+  val (leftSorted, rightSorted) = (left.sorted, right.sorted)
 
-  val distances = sortedLeft.zip(sortedRight).map { case (l, r) => Math.abs(r - l) }
+  val distances = leftSorted.zip(rightSorted).map { (l, r) => Math.abs(r - l) }
 
   distances.sum
 
 def calculateSimilarityScore(left: Locations, right: Locations): Int =
-  val rightCounts = right.groupMapReduce(identity)(_ => 1)(_ + _)
+  val frequencies = right.groupBy { identity }.view.mapValues { _.size }.toMap
 
-  val weights = left.map { l => l * rightCounts.getOrElse(l, 0) }
+  val weights = left.map { l => l * frequencies.getOrElse(l, 0) }
 
   weights.sum
 
