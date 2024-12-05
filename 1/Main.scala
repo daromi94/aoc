@@ -8,22 +8,24 @@ def readLocations(lines: Iterator[String]): (Locations, Locations) =
   lines.zipWithIndex.map { parseLine }.toSeq.unzip
 
 def parseLine(line: String, index: Int): LocationPair =
-  try
-    line.split("\\s+").toList match
-      case l :: r :: Nil => (l.toInt, r.toInt)
-      case _             => throw new IllegalArgumentException(s"line ${index + 1}: expected two elements: '$line'")
-  catch
-    case _: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number: '$line'")
+  line match
+    case s"$l   $r" =>
+      try
+        (l.toInt, r.toInt)
+      catch
+        case _: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number")
 
-def calculateTotalDistance(left: Locations, right: Locations): Int =
+    case _ => throw new IllegalArgumentException(s"line ${index + 1}: expected two elements")
+
+def totalDistance(left: Locations, right: Locations): Int =
   val (leftSorted, rightSorted) = (left.sorted, right.sorted)
 
-  val distances = leftSorted.zip(rightSorted).map { (l, r) => math.abs(r - l) }
+  val distances = leftSorted.lazyZip(rightSorted).map { (l, r) => math.abs(r - l) }
 
   distances.sum
 
-def calculateSimilarityScore(left: Locations, right: Locations): Int =
-  val frequencies = right.groupBy { identity }.view.mapValues { _.size }.toMap
+def similarityScore(left: Locations, right: Locations): Int =
+  val frequencies = right.groupBy { identity }.view.mapValues { _.size }
 
   val weights = left.map { l => l * frequencies.getOrElse(l, 0) }
 
@@ -35,11 +37,11 @@ def calculateSimilarityScore(left: Locations, right: Locations): Int =
   val (left, right) = readLocations(lines)
 
   // Part 1
-  val totalDistance = calculateTotalDistance(left, right)
+  val td = totalDistance(left, right)
 
-  println(s"Total Distance: $totalDistance")
+  println(s"Total Distance: $td")
 
   // Part 2
-  val similarityScore = calculateSimilarityScore(left, right)
+  val ss = similarityScore(left, right)
 
-  println(s"Similarity Score: $similarityScore")
+  println(s"Similarity Score: $ss")
