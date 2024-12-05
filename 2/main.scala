@@ -10,21 +10,21 @@ def parseLine(line: String, index: Int): Report =
   try
     line.split("\\s+").map { _.toInt }.toSeq
   catch
-    case _: NumberFormatException => throw new IllegalArgumentException(s"invalid input at line ${index + 1}: '$line'")
+    case _: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number")
 
 def isSafe(report: Report): Boolean =
   if report.size < 2 then
     true
   else
-    val adjacentDifferences = report.sliding(2).map { case Seq(a, b) => b - a }.toSeq
+    val steps = report.zip(report.tail).map { case (a, b) => b - a }
 
     // Levels must consistently increase or decrease
-    val areLevelsMonotonic = adjacentDifferences.forall { _ > 0 } || adjacentDifferences.forall { _ < 0 }
+    val monotonic = steps.forall { _ > 0 } || steps.forall { _ < 0 }
 
-    // Differences must fall within the range [1, 3]
-    val areDifferencesInRange = adjacentDifferences.map { Math.abs }.forall { d => 1 <= d && d <= 3 }
+    // Steps must be in [1, 3]
+    val stepsInRange = steps.map { math.abs }.forall { s => 1 <= s && s <= 3 }
 
-    areLevelsMonotonic && areDifferencesInRange
+    monotonic && stepsInRange
 
 @main def main(args: String*): Unit =
   val lines = Source.stdin.getLines
