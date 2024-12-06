@@ -12,7 +12,7 @@ def parseLine(line: String, index: Int): Report =
   catch
     case _: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number")
 
-def isSafe(report: Report): Boolean =
+def safe(report: Report): Boolean =
   if report.size < 2 then
     true
   else
@@ -26,12 +26,30 @@ def isSafe(report: Report): Boolean =
 
     monotonic && stepsInRange
 
+def almostSafe(report: Report): Boolean =
+  if safe(report) then
+    true
+  else
+    def dampSafe(report: Report, index: Int): Boolean =
+      val (prefix, suffix) = report.splitAt(index)
+
+      val dampenedReport = prefix ++ suffix.tail
+
+      safe(dampenedReport)
+
+    report.indices.exists { dampSafe(report, _) }
+
 @main def main(args: String*): Unit =
   val lines = Source.stdin.getLines
 
   val reports = readReports(lines)
 
   // Part 1
-  val safeReports = reports.filter { isSafe }
+  val sr = reports.filter { safe }
 
-  println(s"Safe Reports: ${safeReports.size}")
+  println(s"Safe Reports: ${sr.size}")
+
+  // Part 2
+  val asr = reports.filter { almostSafe }
+
+  println(s"Almost-Safe Reports: ${asr.size}")
