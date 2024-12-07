@@ -13,7 +13,7 @@ def parseLine(line: String, index: Int): LocationPair =
       try
         (l.toInt, r.toInt)
       catch
-        case _: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number")
+        case e: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number", e)
 
     case _ => throw new IllegalArgumentException(s"line ${index + 1}: expected two elements")
 

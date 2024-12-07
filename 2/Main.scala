@@ -10,7 +10,7 @@ def parseLine(line: String, index: Int): Report =
   try
     line.split("\\s+").map { _.toInt }.toSeq
   catch
-    case _: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number")
+    case e: NumberFormatException => throw new IllegalArgumentException(s"line ${index + 1}: invalid number", e)
 
 def safe(report: Report): Boolean =
   if report.size < 2 then
