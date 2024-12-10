@@ -11,18 +11,19 @@ object Interpreter:
 
   private val Instruction: Regex = s"$Multiply|$Do|${`Don't`}".r
 
-  private case class State(acc: Int, enabled: Boolean)
+  private case class State(accumulator: Int, enabled: Boolean)
 
-  def interpret(sections: Iterator[String]): Int = interpret(sections.mkString)
+  def interpret(sections: Iterator[String]): Int =
+    interpret(sections.mkString)
 
   private def interpret(section: String): Int =
+    val startState = State(accumulator = 0, enabled = true)
+
     val instructions = Instruction.findAllIn(section)
 
-    val initial = State(0, true)
+    val endState = instructions.foldLeft(startState) { case (state, instruction) => interpret(instruction, state) }
 
-    val state = instructions.foldLeft(initial) { case (state, instruction) => interpret(instruction, state) }
-
-    state.acc
+    endState.accumulator
 
   private def interpret(instruction: String, state: State): State =
     instruction match
@@ -30,13 +31,13 @@ object Interpreter:
         try
           val product = a.toInt * b.toInt
 
-          State(state.acc + product, state.enabled)
+          state.copy(accumulator = state.accumulator + product)
         catch
           case e: NumberFormatException => throw new RuntimeException(s"$a * $b: invalid instruction", e)
 
-      case Do() => State(state.acc, true)
+      case Do() => state.copy(enabled = true)
 
-      case `Don't`() => State(state.acc, false)
+      case `Don't`() => state.copy(enabled = false)
 
       case _ => state
 
