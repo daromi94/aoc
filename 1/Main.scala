@@ -32,7 +32,7 @@ def similarityScore(left: Locations, right: Locations): Int =
   weights.sum
 
 @main def main(args: String*): Unit =
-  val lines = Source.stdin.getLines
+  val lines = Source.stdin.getLines()
 
   val (left, right) = readLocations(lines)
 

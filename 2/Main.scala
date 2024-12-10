@@ -40,7 +40,7 @@ def almostSafe(report: Report): Boolean =
     report.indices.exists { dampSafe(report, _) }
 
 @main def main(args: String*): Unit =
-  val lines = Source.stdin.getLines
+  val lines = Source.stdin.getLines()
 
   val reports = readReports(lines)
 
